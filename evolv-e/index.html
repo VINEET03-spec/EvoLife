@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/evole2.png">
+    <link rel="stylesheet" href="./public/style.css">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <title>EvoLife</title>
+    <script type="text/javascript" src="./public/Classes/Vector.js"></script>
+    <script type="text/javascript" src="./public/Classes/Circular.js"></script>
+    <script type="text/javascript" src="./public/Classes/point.js"></script>
+    <script type="text/javascript" src="./public/Classes/Rectangle.js"></script>
+    <script type="text/javascript" src="./public/Classes/QuadTree.js"></script>
+    <script type="text/javascript" src="./public/Classes/DNA.js"></script>
+    <script type="text/javascript" src="./public/Classes/Food.js"></script>
+    <script type="text/javascript" src="./public/Classes/Organisms.js"></script>
+    <script type="text/javascript" src="./public/Classes/Herbivores.js"></script>
+    <script type="text/javascript" src="./public/Classes/Carnivores.js"></script>
+    <script type="text/javascript" src="./public/Classes/Infos.js"></script>
+    <script type="text/javascript" src="./public/Classes/Historic.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+   <style>
+        body{
+            margin: 0
+        }
+    </style>
+    <script type="text/javascript">
+        var hour = minute= second = milisecond = 0;
+        var total_seconds  = 0;
+    </script>
+</head> 
+
+<body style="background: #131212">
+    <div class="splash" style="background: #2c2c2c;">
+        <div class="d-flex flex-column justify-content-center" style="height: inherit;">
+            <div class="align-self-center">
+                <img id="img-splash" src="Images/evole.png" alt=""/>
+            </div>
+        </div>
+    </div>
+    <canvas></canvas>
+    <div class="stopwatch">
+        <span id="hour">00</span>:<span id="minute">00</span>:<span id="second">00</span>:<span id="milisecond">00</span>
+    </div>
+    <div id="tabs">
+        <div id="tabs-buttons" class="position-absolute d-flex" style="top:0; right:0;">
+            <button type="button" class="btn btn-dark" onclick="$('#tab-simulation').show();">Simulation</button>
+            <button type="button" class="btn btn-dark" onclick="$('#tab-Organisms').show();">Organisms</button>
+            <button type="button" class="btn btn-dark" onclick="$('#tab-Data').show();">Data</button>
+        </div>
+        <div id="tabs-contents">
+            <!--------------------- TAB simulation ---------------------->
+            <div id="tab-simulation" class="tab-info w-300px" style="right: 5px; top:calc(50% - 215px);">
+                <div class="tab-title">
+                    Simulation
+                    <button type="button" class="btn close-btn" onclick=" $(this).closest('.tab-info').hide()">
+                        <i class="fal fa-minus"></i>
+                    </button>
+                </div>
+                <div class="tab-body">
+
+                    <div id="home_panel">
+                        <div id="initial_inputs" class="p-0 m-0">
+                            <label id="carnivore" name="carnivore" for="inputcarnivores">Carnivores: <label id="numCarn">35</label></label>
+                            <input type="range" min="0" max="500" value="35" class="slider-red" step="1" id="inputcarnivores" oninput="numCarn.textContent=inputcarnivores.value">
+                            <label id="herbivore" name="herbivore" for="inputherbivores">Herbivores: <label id="numHerb">300</label></label>
+                            <input type="range" min="0" max="800" value="300" class="slider-blue" step="1" id="inputherbivores" oninput="numHerb.textContent=inputherbivores.value">
+                            <label id="food" name="food" for="inputfoods">Vegetables: <label id="numAli">800</label></label>
+                            <input type="range" min="0" max="3000" value="800" class="slider-yellow" step="5" id="inputfoods" oninput="numAli.textContent=inputfoods.value">    
+                        </div>
+                        <label id="ratefood" name="ratefood" for="inputratefoods">Appearance of Vegetables: <label id="numrateAli">100</label> per second</label>
+                        <input type="range" min="0" max="1000" value="100" class="slider-yellow" step="1" id="inputratefoods" oninput="changedInputrate()"
+                            onchange="changeintervalofoods(inputratefoods.value)">
+                        <label id="probMutation" name="probMutation" for="inputProbMutation">Mutation probability : <label id="numProbMutation">10</label>%</label>
+                        <input type="range" min="0" max="100" value="10" class="slider-blue" id="inputProbMutation" oninput="mudouInputProb()"
+                            onchange="changesProbmutation(inputProbMutation.value)">
+                        <label id="magMutation" name="magMutation" for="inputMagMutation">Magnitude of Mutation: <label id="numMagMutation">5</label>%</label>
+                        <input type="range" min="0" max="100" value="5" class="slider-blue" id="inputMagMutation" oninput="mudouInputMag()"
+                            onchange="mudaMagMutacao(inputMagMutation.value)">
+                        <div id="divSizeUniverse">
+                            <label id="SizeUniverse" name="SizeUniverse" for="inputSizeUniverse">Size of Universe: <label id="numSizeUniverse">2</label></label>
+                            <input type="range" min="1" max="5" value="2" class="slider" id="inputSizeUniverse" oninput="rebalanceQuantities()">
+                        </div>
+                        <div id="buttonInitials" class ="row mt-3">
+                            <div class="col-sm-3 d-grid gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" style="color: #ddd" onclick="restorePatterns()">Default</button>
+                            </div>
+                            <div class="col-sm-9 d-grid gap-2">
+                                <button type="button" class="btn btn-sm btn-success" onclick="startsimulation()">Play</button>
+                            </div>
+                        </div>
+                        <div id="secondary_buttons" class="mt-3 text-center d-none">
+                            <button id="restartBtn" type="button" class="btn btn-sm btn-block btn-outline-secondary" style="color: #ddd" onclick="showhome_panel()">Restart</button>
+                            <div id="btnDesacelera" class="" onclick="desacelera()" style="cursor: pointer; display: inline; margin-left: 10px;">
+                                <i class="fas fa-arrow-alt-to-left"></i>
+                            </div>
+                            <div id="btnPausa" class="" onclick="pausa()" style="cursor: pointer; display: inline; margin-left: 10px;">
+                                <i class="fas fa-pause"></i>
+                            </div>
+                            <div id="btnDespausa" class="d-none" onclick="despausa()" style="cursor: pointer; display: inline; margin-left: 10px;">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div id="btnAcelera" class="" onclick="acelera()" style="cursor: pointer; display: inline; margin-left: 10px;">
+                                <i class="fas fa-angle-double-right"></i>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <div id="secondary_panel" class="d-none">
+                        <div class="d-grid gap-2 mt-4">
+                            
+                            <div class="text-center">
+                                <input id="highlightFalse" name="highlight" type="radio" onclick="highlight()" checked/>
+                                <label for="highlightFalse">All</label>
+
+                                <input id="highlightCarn" name="highlight" type="radio" onclick="highlight('c')"/>
+                                <label for="highlightCarn">Carnivores</label>
+
+                                <input id="highlightHerb" name="highlight" type="radio" onclick="highlight('h')"/>
+                                <label for="highlightHerb">Herbivores</label>
+                            </div>
+                            <div>
+                                <label class ="form-check-label" for = "division">Split Population</label>
+                                <input class ="form-check-input" type="checkbox" id="division" name="division"
+                                    onclick="splitChart()">
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-Organisms" class="tab-info w-300px" style="left:50%; top:50%;display:none;">
+                <div class="tab-title">
+                    Organisms
+                    <button type="button" class="btn close-btn" onclick=" $(this).closest('.tab-info').hide()">
+                        <i class="fal fa-minus"></i>
+                    </button>
+                </div>
+                <div class="tab-body">
+                    <div class="d-flex">
+                        <button type="button" id="btnCarn" class="d-flex justify-content-around align-items-center btn btn-sm btn-outline-danger w-100 addObjeto" onclick="addcarnivore()"><span class="icone-carnivore"></span>Add Carnivore</button>
+                        <button type="button" class="btn btn-gray" onclick="showEditPanel(1)"><i class="fas fa-edit p-0"></i></button>
+                    </div>
+                    <div class="d-flex">
+                        <button type="button" id="btnHerb" class="d-flex justify-content-around align-items-center btn btn-sm btn-outline-success w-100 addObjeto" onclick="addherbivore()"><span class="icone-herbivore"></span>Add Herbivore</button>
+                        <button type="button" class="btn btn-gray" onclick="showEditPanel(2)"><i class="fas fa-edit p-0"></i></button>
+                    </div>
+                    <button type="button" id="btnAli"  class="d-flex justify-content-around align-items-center btn btn-sm btn-outline-warning w-100 addObjeto" onclick="addfood()"><span class="icone-vegetal"></span>Add Vegetable</button>
+                    
+                    <hr class="mt-4">
+                    <div class="text-center " id="sectionDelete">
+                        <i class="fas fa-exclamation-triangle" style="color:rgb(234, 194, 15)"></i> Delete
+                    </div>
+                    <div class="text-center">
+                        <input id="inputMataHerb" name="inputMata" type="radio" onclick="matar('h')"/>
+                        <label for="inputMataHerb">Herbivores</label>
+
+                        <input id="inputMataCarn" name="inputMata" type="radio" onclick="matar('c')"/>
+                        <label for="inputMataCarn">Carnivores</label>
+                    </div>
+                    <div class="text-center">
+                        <input id="inputMataAli" name="inputMata" type="radio" onclick="matar('a')"/>
+                        <label for="inputMataAli">Vegetables</label>
+
+                        <input id="inputMataAll" name="inputMata" type="radio" onclick="matar()"/>
+                        <label for="inputMataAll">All</label>
+                    </div>
+                    <div id="btnDeletePopovers" class="mt-2" style="display: none;">
+                        <button type="button" class="btn btn-outline-info btn-sm btn-block" onclick="deletePopovers()">Close popovers</button>
+                    </div>
+                    <div id="panelEdit" class="container-fluid edit-organism my-3 d-none">
+                    </div>
+                </div>
+            </div>
+            <div id="tab-Data" class="tab-info" style="left:5px; top:calc(50% - 319px);display:none;z-index: 1;">
+                <div class="tab-title">
+                    Data
+                    <button type="button" class="btn close-btn" onclick=" $(this).closest('.tab-info').hide()">
+                        <i class="fal fa-minus"></i>
+                    </button>
+                </div>
+                
+                <div class="tab-body">
+                    <div id="btnsChart" class="d-flex justify-content-center flex-wrap d-none" style="width: 100%;">
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(1)">Population</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(2)">Speed</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(3)">Agility</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(4)">Radius</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(5)">Detection</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(6)">Energy</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(7)">Expenditure</button>
+                        <button type="button" class="btn btn-sm btn-outline-info mx-1 my-1 flex-fill" onclick="changeChart(8)">Litter Size</button>
+                    </div>
+                    <div id="chart"></div>
+                    <div id="chartSecondary"></div>
+
+
+                    <div id="Download-Data" class="d-none">
+                        <button id="Download-Data-btn" type="button" class="btn btn-sm btn-block btn-outline-secondary" style="color: #ddd; width: 40%; margin: 15px 0 5px 30%" onclick="exportarData()">Download Data</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="position-absolute" style="top: 40%; right: 350px;" >
+        <div role="alert" aria-live="assertive" aria-atomic="true" class="toast align-items-center text-white bg-secondary border-0" data-autohide="false" >
+            <div class="d-flex">
+                <div class="toast-body">
+                    Enter the parameters and click Play to start the simulation. Click Default to restore the default settings.<br/>
+<b>You can also zoom in/out using the mouse wheel, and move around the screen by clicking and dragging!</b>
+
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>    
+    </div>
+    
+  <script type="text/javascript">
+        var inputTalim = document.getElementById("inputratefoods");
+        const labelrate = document.getElementById("numrateAli");
+
+        var inputPMut = document.getElementById("inputProbMutation");
+        const labelProb = document.getElementById("numProbMutation");
+
+        var inputMMut = document.getElementById("inputMagMutation");
+        const labelMag = document.getElementById("numMagMutation");
+
+        var n_carnivores;
+        var n_herbivores;
+        var n_foods;
+
+        var beforeDoPlay = true;
+
+        var running = false;  
+        var insertDataGraphic;      
+
+        var paused = false;
+
+        var sliderCarn = document.getElementById("inputcarnivores");
+        var outputCarn = document.getElementById("numCarn");
+        outputCarn.innerHTML = sliderCarn.value;
+
+        var sliderHerb = document.getElementById("inputherbivores");
+        var outputHerb = document.getElementById("numHerb");
+        outputHerb.innerHTML = sliderHerb.value;
+
+        var sliderAli = document.getElementById("inputfoods");
+        var outputAli = document.getElementById("numAli");
+        outputAli.innerHTML = sliderAli.value;
+
+        var btnAddHerb = document.getElementById("btnHerb");
+        var btnAddCarn = document.getElementById("btnCarn");
+        var btnAddAli = document.getElementById("btnAli");
+
+        var btnPausa = document.getElementById("btnPausa");
+        var btnDespausa = document.getElementById("btnDespausa");
+
+        var chartType = 1;
+        sliderCarn.oninput = function(){
+            outputCarn.innerHTML = this.value;
+            n_carnivores = outputCarn.innerHTML;
+        }
+        sliderHerb.oninput = function(){
+            outputHerb.innerHTML = this.value;
+            n_herbivores = outputHerb.innerHTML;
+        }
+        sliderAli.oninput = function(){
+            outputAli.innerHTML = this.value;
+            n_foods = outputAli.innerHTML;
+        }
+
+        $(document).ready(function(){
+            $('.toast').toast('show');
+            $('.toast').css("data-autohide", "false");
+            setTimeout(function(){
+                $(".splash").fadeOut(800)
+            }, 1500)
+            document.querySelectorAll(".tab-info").forEach(elemento => dragElement(elemento))
+        });
+
+
+        function startsimulation(){ 
+            SizeUniverse = parseInt(document.getElementById("numSizeUniverse").textContent);
+            n_carnivores = parseInt(document.getElementById("numCarn").textContent) * SizeUniverse;
+            n_herbivores = parseInt(document.getElementById("numHerb").textContent) * SizeUniverse;
+            n_foods = parseInt(document.getElementById("numAli").textContent) * SizeUniverse;
+            beforeDoPlay = false;
+            resetTimer();
+            historic.clear();
+            createsstopwatch();
+            createsUniverse(SizeUniverse);
+            create_Objects(n_carnivores, n_herbivores, n_foods);
+            canvas.addEventListener("click", getOrg);
+            calculateDataGraphic(); 
+            setInterval(calculateDataGraphic, 1000);
+            resetChart();
+            buildChart(chartType);
+            showBtnGraphics();
+            insertDataGraphic = setInterval(insertNextDataChart, 1000);
+            setInterval(checaPopulacoesDivididas, 1000);
+            inputTalim = document.getElementById("inputratefoods");
+            changeintervalofoods(inputTalim.value, true);
+            inputPMut = document.getElementById("inputProbMutation");
+            changesProbmutation(inputPMut.value);
+            inputMMut = document.getElementById("inputMagMutation");
+            mudaMagMutacao(inputMMut.value);
+            document.getElementById("initial_inputs").classList.add("d-none");
+            document.getElementById("divSizeUniverse").classList.add("d-none");
+            document.getElementById("secondary_panel").classList.remove("d-none");
+            document.getElementById("buttonInitials").classList.add("d-none");
+            document.getElementById("secondary_buttons").classList.remove("d-none");
+            document.getElementById("Download-Data").classList.remove("d-none"); // FIND Data
+            if(!running && !paused) { 
+                animate(); 
+            }
+            running = true;
+        }
+        function restorePatterns(){
+            document.getElementById("numCarn").textContent = 35;
+            document.getElementById("inputcarnivores").value = 35;
+
+            document.getElementById("numHerb").textContent = 300;
+            document.getElementById("inputherbivores").value = 300;
+
+            document.getElementById("numAli").textContent = 800;
+            document.getElementById("inputfoods").value = 800;
+
+            document.getElementById("numProbMutation").textContent = 10;
+            document.getElementById("numMagMutation").textContent = 5;
+
+            document.getElementById("numSizeUniverse").textContent = 2;
+            document.getElementById("inputSizeUniverse").value = 2;
+
+            labelrate.textContent = 100;
+            inputTalim.value = 100;
+            inputPMut.value = 10;
+            inputMMut.value = 5;
+        }
+        function rebalanceQuantities(){
+            numSizeUniverse.textContent=inputSizeUniverse.value
+            var tamUniverso = parseInt(inputSizeUniverse.value)
+            var escala = Math.pow(tamUniverso, 1.3);
+
+            document.getElementById("numCarn").textContent = Math.round(15 * escala * 0.8);
+            document.getElementById("inputcarnivores").value = Math.round(15 * escala * 0.8);
+
+            document.getElementById("numHerb").textContent = Math.round(100 * escala * 0.8);
+            document.getElementById("inputherbivores").value = Math.round(100 * escala * 0.8);
+
+            document.getElementById("numAli").textContent = Math.round(300 * escala);
+            document.getElementById("inputfoods").value = Math.round(300 * escala);
+
+            labelrate.textContent = Math.round(30 * escala * 1.5);
+            inputTalim.value = Math.round(30 * escala * 1.5);
+        }
+        function showhome_panel() {
+            destroyObjects();
+            resetTimer();
+            resetChart();
+            beforeDoPlay = true;
+            clearInterval(insertDataGraphic)
+            inputTalim = document.getElementById("inputratefoods");
+            changeintervalofoods(inputTalim.value);
+            inputPMut = document.getElementById("inputProbMutation");
+            changesProbmutation(inputPMut.value);
+            inputMMut = document.getElementById("inputMagMutation");
+            mudaMagMutacao(inputMMut.value);
+            document.getElementById("initial_inputs").classList.remove("d-none");
+            document.getElementById("buttonInitials").classList.remove("d-none");
+            document.getElementById("secondary_buttons").classList.add("d-none");
+            document.getElementById("secondary_panel").classList.add("d-none");
+        }
+        function addcarnivore(){ 
+            if(btnAddCarn.classList.contains("active")){
+                btnAddCarn.classList.remove("active");
+                document.removeEventListener('click', generatesdorC, true);
+                btnAddHerb.classList.contains("active") || btnAddAli.classList.contains("active") ?
+                    0 : canvas.addEventListener("click", getOrg);
+            }else{
+                btnAddCarn.classList.add("active");
+                canvas.removeEventListener("click", getOrg);
+                document.addEventListener('click', generatesdorC, true);
+            }
+        }
+        function addherbivore(){
+            if(btnAddHerb.classList.contains("active")){
+                btnAddHerb.classList.remove("active");
+                document.removeEventListener('click', generatesdorH, true);
+                btnAddCarn.classList.contains("active") || btnAddAli.classList.contains("active") ?
+                    0 : canvas.addEventListener("click", getOrg);
+            }else{
+                btnAddHerb.classList.add("active");
+                canvas.removeEventListener("click", getOrg);
+                document.addEventListener('click', generatesdorH, true); 
+            }
+        }
+        function generatesdorC(e){
+            cursorX = e.pageX;
+            cursorY = e.pageY;
+            if(cursorX<=canvas.width && cursorY<=canvas.height){
+                let carnivore = generatesCarnivores(cursorX,cursorY);
+                carnivore.display()
+            }
+        }
+        function generatesdorH(e){
+            cursorX = e.pageX;
+            cursorY= e.pageY;
+            if(cursorX<=canvas.width && cursorY<=canvas.height){
+                let herbivore = generatesHerbivores(cursorX,cursorY);
+                herbivore.display()
+            }
+            cursorX =null;
+            cursorY = null;
+        }
+        function addfood(){
+            if(btnAddAli.classList.contains("active")){
+                btnAddAli.classList.remove("active");
+                document.removeEventListener('click', generatesdorA, true);
+                btnAddCarn.classList.contains("active") || btnAddHerb.classList.contains("active") ?
+                    0 : canvas.addEventListener("click", getOrg);
+            }else{
+                btnAddAli.classList.add("active");
+                canvas.removeEventListener("click", getOrg);
+                document.addEventListener('click', generatesdorA, true); 
+            }
+        }
+        function getOrg(event) {
+            let cursorX = event.pageX
+            let cursorY = event.pageY
+            getOrganism(cursorX, cursorY)
+            $("#btnDeletePopovers").show()
+        }
+        function mudouInputProb(){
+            labelProb.textContent = inputPMut.value;
+        }
+        function mudouInputMag(){
+            labelMag.textContent = inputMMut.value;
+        }
+        function changedInputrate() {
+            if(inputTalim.value > 0) {
+                labelrate.textContent = inputTalim.value;
+            } else {
+                labelrate.textContent = "none";
+            }
+        }
+        function generatesdorA(e){
+            cursorX = e.pageX;
+            cursorY= e.pageY;
+            if(cursorX<=canvas.width && cursorY<=canvas.height){
+                let food = generatesFood(cursorX,cursorY);
+                food.display()
+            }
+        }
+        function showBtnGraphics() {
+            $("#btnsChart").removeClass("d-none");
+        }
+        function deletePopovers() {
+            $(".popover-info").each((i, el) => {
+                let popoverId = $(el).attr("id")
+                popoverId = popoverId.match(/\d{1,}/g)[0]
+                let organismId = $(el).attr("data-organismid")
+                deletePopover(popoverId, organismId);
+            })
+            $("#btnDeletePopovers").hide();
+        }
+        function exportarData(){
+            id_simulation = makeId(4);
+            qtd_linhas = historic.seconds.length;
+
+            Data_simulation = [
+            ["idsimulation", "Initial Population H", "Initial Population C", "foods per second", "seconds",
+ "Population H", "Speed H", "Agility H", "Radius H", "Detection H", "Energy H", "Consumption H", "Average Litter H",
+ "Population C", "Speed C", "Agility C", "Radius C", "Detection C", "Energy C", "Consumption C", "Average Litter C"]
+            ]
+
+            for(let i=0; i < qtd_linhas; i++){
+                Data_simulation.push(
+                    [
+                        id_simulation, 
+                        historic.herbivores.population[0],
+                        historic.carnivores.population[0],
+                        historic.food_rate[i],
+                        historic.seconds[i], 
+                        historic.herbivores.population[i], 
+                        historic.herbivores.speed[i], 
+                        historic.herbivores.agility[i], 
+                        historic.herbivores.ray[i], 
+                        historic.herbivores.detection[i], 
+                        historic.herbivores.energy[i], 
+                        historic.herbivores.spent[i],
+                        historic.herbivores.average_litter_size[i],
+                        historic.carnivores.population[i], 
+                        historic.carnivores.speed[i], 
+                        historic.carnivores.agility[i], 
+                        historic.carnivores.ray[i], 
+                        historic.carnivores.detection[i], 
+                        historic.carnivores.energy[i], 
+                        historic.carnivores.spent[i],
+                        historic.carnivores.average_litter_size[i]
+                    ]
+                )
+            }
+            exportToCsv("Data-simulation.csv", Data_simulation)
+        }
+
+        function highlight(organism = false) {
+            Carnivores.highlight = false
+            Herbivores.highlight = false
+
+            if(organism == "c")
+                Carnivores.highlight = true
+            else if(organism == "h")
+                Herbivores.highlight = true
+        }
+        function matar(organism = false) { 
+            if(organism == "c")
+                Carnivores.carnivores = []
+            else if(organism == "h")
+                Herbivores.herbivores = []
+            else if(organism == "a"){
+                Food.foods = []
+                inputTalim.value = 0;
+                labelrate.textContent = 0
+                changeintervalofoods(0);
+            }
+            else{
+                Carnivores.carnivores = []
+                Herbivores.herbivores = []
+                Food.foods = []
+                inputTalim.value = 0;
+                labelrate.textContent = 0
+                changeintervalofoods(0);
+            }
+
+        }
+
+        function dragElement(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+            if (elmnt.classList.contains("tab-info")) {
+                elmnt.children[0].onmousedown = dragMouseDown;
+            } else {
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // get the mouse cursor position at startup:
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    // call a function whenever the cursor moves:
+                    document.onmousemove = elementDrag;
+                }
+
+            function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // calculate the new cursor position:
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    // set the element's new position:
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                }
+
+            function closeDragElement() {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+    </script>
+    <script type="text/javascript" src="./public/index.js"></script>
+    <script type="text/javascript" src="./public/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+
+</body>
+</html>
